@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Recruiter Cost Avoidance Calculator</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:16px;line-height:1.5;background:#f9f9f7;color:#1a1a1a;padding:2rem 1rem}
+.container{max-width:780px;margin:0 auto}
+.header{margin-bottom:2rem}
+.header h1{font-size:26px;font-weight:500;margin-bottom:4px}
+.header p{font-size:15px;color:#666}
+.section{background:#fff;border:0.5px solid #e0e0e0;border-radius:12px;padding:1.5rem;margin-bottom:1rem}
+.section-title{font-size:12px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:1rem}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.field-row.four{grid-template-columns:1fr 1fr 1fr 1fr}
+@media(max-width:600px){.field-row,.field-row.four{grid-template-columns:1fr}}
+.field label{font-size:13px;color:#555;display:block;margin-bottom:4px}
+.field input,.field select{width:100%;padding:8px 10px;border:0.5px solid #ccc;border-radius:8px;font-size:14px;color:#1a1a1a;background:#fff;outline:none}
+.field input:focus,.field select:focus{border-color:#888}
+.hint{font-size:12px;color:#aaa;margin-top:3px}
+.custom-symbol{display:none;margin-top:8px}
+.check-row{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.check-row input[type=checkbox]{width:16px;height:16px;flex-shrink:0;cursor:pointer;accent-color:#1a1a1a}
+.check-row label{font-size:14px;color:#1a1a1a;cursor:pointer;margin:0}
+.btn{padding:8px 16px;border-radius:8px;font-size:14px;cursor:pointer;background:#fff;border:0.5px solid #ccc;color:#1a1a1a;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:#f5f5f5}
+.btn-primary{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+.btn-primary:hover{opacity:0.85}
+.btn-row{display:flex;gap:8px;margin-top:4px;flex-wrap:wrap}
+.tab-row{display:flex;gap:0;margin-bottom:1rem;border:0.5px solid #e0e0e0;border-radius:8px;overflow:hidden}
+.tab{flex:1;padding:8px 12px;font-size:13px;cursor:pointer;background:#f5f5f3;border:none;color:#888;text-align:center}
+.tab.active{background:#fff;color:#1a1a1a;font-weight:500}
+.tab:first-child{border-right:0.5px solid #e0e0e0}
+.pane{display:none}
+.pane.active{display:block}
+.metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:1rem}
+.metric{background:#f5f5f3;border-radius:8px;padding:1rem}
+.metric .label{font-size:13px;color:#666;margin-bottom:4px}
+.metric .value{font-size:22px;font-weight:500;color:#1a1a1a}
+.metric .value.positive{color:#1a7f4b}
+.metric .value.negative{color:#c0392b}
+.metric .value.muted{color:#bbb;font-size:16px}
+.net-card{border-radius:10px;padding:1.25rem 1.5rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;border:0.5px solid #e0e0e0;background:#f5f5f3}
+.net-card.positive{background:#f0faf5;border-color:#a8dfc0}
+.net-card.negative{background:#fdf2f2;border-color:#f0b8b8}
+.net-card-label{font-size:14px;font-weight:500;color:#555}
+.net-card-value{font-size:32px;font-weight:600;color:#bbb}
+.net-card-value.positive{color:#1a7f4b}
+.net-card-value.negative{color:#c0392b}
+.net-card-value.muted{color:#bbb;font-size:22px}
+.year-table{width:100%;border-collapse:collapse;font-size:14px}
+.year-table th{font-size:12px;font-weight:500;color:#888;text-align:left;padding:6px 8px;border-bottom:0.5px solid #eee}
+.year-table td{padding:8px;border-bottom:0.5px solid #eee;color:#1a1a1a}
+.year-table td.positive{color:#1a7f4b;font-weight:500}
+.year-table td.negative{color:#c0392b;font-weight:500}
+.year-table td.muted{color:#bbb}
+.year-table tr:last-child td{border-bottom:none}
+.hire-list{margin-top:8px}
+.hire-item{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:0.5px solid #eee;font-size:13px;color:#888}
+.hire-item:last-child{border-bottom:none}
+.hire-item .role{flex:1;color:#1a1a1a}
+.hire-item .amt{font-weight:500;color:#1a7f4b}
+.hire-item .amt.bad{color:#c0392b}
+.hire-item button{background:none;border:none;cursor:pointer;color:#bbb;padding:2px 4px;font-size:16px;line-height:1}
+.hire-item button:hover{color:#c0392b}
+.hire-item button.bad-toggle{font-size:13px;padding:2px 8px;border-radius:6px;border:0.5px solid #eee;color:#bbb;margin-right:2px}
+.hire-item button.bad-toggle:hover{border-color:#c0392b;color:#c0392b}
+.hire-item button.bad-toggle.active{background:#fdecea;border-color:#c0392b;color:#c0392b}
+.empty{font-size:13px;color:#bbb;padding:8px 0;font-style:italic}
+.divider{border:none;border-top:0.5px solid #eee;margin:1rem 0}
+.tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:6px;background:#fdecea;color:#c0392b;margin-left:6px}
+.tag.agency{background:#f0f0ee;color:#888}
+.tag.csv{background:#e8f0fe;color:#1a56db}
+.export-row{display:flex;gap:8px;margin-top:1rem;flex-wrap:wrap}
+.upload-area{border:1.5px dashed #ccc;border-radius:12px;padding:2rem;text-align:center;cursor:pointer;margin-bottom:1rem}
+.upload-area:hover{background:#f9f9f7}
+.upload-area p{font-size:14px;color:#666;margin-top:8px}
+.upload-area .small{font-size:12px;color:#aaa;margin-top:4px}
+.mapping-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1rem}
+.mapping-note{font-size:12px;color:#aaa;margin-bottom:1rem}
+.info{font-size:12px;color:#1a56db;background:#e8f0fe;border:0.5px solid #c0d0f0;border-radius:6px;padding:6px 10px;margin-bottom:12px}
+.warning{font-size:12px;color:#92690a;background:#fffbeb;border:0.5px solid #f6d860;border-radius:6px;padding:8px 10px;margin-bottom:12px}
+.nudge{background:#fffbeb;border:0.5px solid #f6d860;border-radius:8px;padding:10px 14px;margin-bottom:1rem;font-size:13px;color:#92690a;display:flex;align-items:center;gap:8px}
+.nudge a{color:#92690a;font-weight:500;text-decoration:underline;cursor:pointer}
+.source-box{background:#f9f9f7;border:0.5px solid #e0e0e0;border-radius:8px;padding:1rem;margin-bottom:1rem}
+.source-box .source-title{font-size:12px;font-weight:500;color:#555;margin-bottom:8px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.chip{padding:4px 12px;border-radius:20px;font-size:12px;cursor:pointer;border:0.5px solid #ccc;background:#fff;color:#1a1a1a;transition:all 0.15s}
+.chip:hover{border-color:#888}
+.chip.selected{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+.preview-box{background:#f9f9f7;border:0.5px solid #e0e0e0;border-radius:8px;padding:1rem;margin-bottom:1rem}
+.preview-box .preview-title{font-size:12px;font-weight:500;color:#555;margin-bottom:8px}
+.preview-table{width:100%;border-collapse:collapse;font-size:13px}
+.preview-table th{font-size:11px;color:#888;text-align:left;padding:4px 6px;border-bottom:0.5px solid #eee}
+.preview-table td{padding:4px 6px;border-bottom:0.5px solid #eee;color:#1a1a1a}
+.preview-table tr:last-child td{border-bottom:none}
+.preview-table td.excl{color:#bbb}
+.row-toggle{display:inline-flex;border:0.5px solid #ccc;border-radius:6px;overflow:hidden;font-size:12px}
+.row-toggle button{padding:3px 10px;border:none;background:#fff;cursor:pointer;color:#888;line-height:1.4}
+.row-toggle button:hover{background:#f5f5f5}
+.row-toggle button.active-inhouse{background:#1a7f4b;color:#fff}
+.row-toggle button.active-agency{background:#1a1a1a;color:#fff}
+.row-toggle button:first-child{border-right:0.5px solid #ccc}
+.tip{position:relative;display:inline-flex;align-items:center;margin-left:4px;cursor:help}
+.tip .tip-icon{font-size:13px;color:#aaa;line-height:1}
+.tip .tip-text{display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;font-size:12px;font-weight:400;line-height:1.5;padding:8px 12px;border-radius:8px;width:260px;z-index:10;white-space:normal;pointer-events:none}
+.tip:hover .tip-text{display:block}
+.unconfirmed-badge{font-size:13px;font-weight:500;color:#fff;background:#c0392b;border-radius:6px;padding:8px 14px;margin-bottom:10px;display:none}
+.preview-count{font-size:13px;color:#666;margin-bottom:12px}
+.field-error{font-size:13px;color:#c0392b;background:#fdecea;border:0.5px solid #f5c0ba;border-radius:6px;padding:8px 12px;margin-bottom:12px;display:none}
+.footer{text-align:center;font-size:12px;color:#bbb;margin-top:2rem;padding-top:1rem;border-top:0.5px solid #eee}
+.footer a{color:#bbb;text-decoration:underline}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>Recruiter cost avoidance calculator</h1>
+    <p>Are you saving more than you cost? No data is stored. Everything resets when you close this page.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Your info</div>
+    <div class="field-row four">
+      <div class="field">
+        <label>Currency</label>
+        <select id="currency" onchange="handleCurrencyChange()">
+          <option value="$">USD ($)</option>
+          <option value="€">EUR (€)</option>
+          <option value="£">GBP (£)</option>
+          <option value="CA$">CAD (CA$)</option>
+          <option value="A$">AUD (A$)</option>
+          <option value="S$">SGD (S$)</option>
+          <option value="₹">INR (₹)</option>
+          <option value="custom">Other...</option>
+        </select>
+        <div class="custom-symbol" id="custom-wrap">
+          <input type="text" id="custom-symbol" placeholder="Enter symbol, e.g. ¥" maxlength="4" oninput="recalc()">
+        </div>
+      </div>
+      <div class="field">
+        <label>Your annual salary</label>
+        <input type="number" id="rec-salary" placeholder="e.g. 120000" min="0" oninput="recalc()">
+      </div>
+      <div class="field">
+        <label>Start date in this role</label>
+        <input type="date" id="rec-start" oninput="recalc()" onchange="recalc()">
+      </div>
+      <div class="field">
+        <label>Bad hire cost multiplier</label>
+        <input type="number" id="bad-hire-pct" value="50" min="0" max="200" step="5" oninput="recalc()">
+        <div class="hint">% of base salary. SHRM default: 50%</div>
+      </div>
+      <div class="field">
+        <label style="display:flex;align-items:center">Referral bonus amount
+          <span class="tip"><i class="ti ti-info-circle tip-icon"></i><span class="tip-text">A referral bonus is paid to whoever referred this candidate — employees, customers, partners, or others eligible under your company's program (recruiters typically excluded). Enter your standard amount, or $0 if your company doesn't have a referral program. Adjust individual hires in your exported report if amounts vary.</span></span>
+        </label>
+        <input type="number" id="referral-bonus" value="0" min="0" step="100" oninput="recalc()">
+        <div class="hint">Flat amount per referral hire.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Log hires</div>
+    <div class="tab-row">
+      <button class="tab active" onclick="switchTab('manual')">Add manually</button>
+      <button class="tab" onclick="switchTab('csv')">Import from ATS (CSV)</button>
+    </div>
+
+    <div id="pane-manual" class="pane active">
+      <div class="field-row">
+        <div class="field">
+          <label>Role title <span style="color:#bbb;font-weight:400">(optional)</span></label>
+          <input type="text" id="h-role" placeholder="e.g. Senior Engineer">
+        </div>
+        <div class="field">
+          <label>Date filled</label>
+          <input type="date" id="h-date">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Candidate base salary</label>
+          <input type="number" id="h-base" placeholder="e.g. 150000" min="0">
+        </div>
+        <div class="field">
+          <label>Agency rate (%)</label>
+          <input type="number" id="h-rate" value="25" min="0" max="100" step="1">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Filled by</label>
+          <select id="h-source" onchange="handleManualSourceChange()">
+            <option value="me">Me (in-house)</option>
+            <option value="agency">Agency</option>
+          </select>
+          <div class="hint">Agency fills are excluded from avoidance — no fee was avoided.</div>
+        </div>
+      </div>
+      <div class="check-row" id="referral-row">
+        <input type="checkbox" id="h-referral">
+        <label for="h-referral">Referral hire (deduct referral bonus)</label>
+      </div>
+      <div class="check-row">
+        <input type="checkbox" id="h-failed">
+        <label for="h-failed">This hire left within 12 months (add bad hire cost)</label>
+      </div>
+      <div class="field-error" id="hire-error"></div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="addHire()"><i class="ti ti-plus"></i> Add hire</button>
+      </div>
+    </div>
+
+    <div id="pane-csv" class="pane">
+      <div class="info">Export a hires report from your ATS as a CSV, then upload it here. Map your columns and confirm before importing.</div>
+      <div class="upload-area" onclick="document.getElementById('csv-file').click()">
+        <i class="ti ti-upload" style="font-size:24px;color:#888"></i>
+        <p>Click to upload your CSV file</p>
+        <div class="small">Supports exports from Greenhouse, Lever, Ashby, Workday, and others</div>
+      </div>
+      <input type="file" id="csv-file" accept=".csv" style="display:none" onchange="handleCSV(this)">
+      <div class="field-error" id="csv-error"></div>
+
+      <div id="mapping-section" style="display:none">
+        <div class="section-title" style="margin-top:1rem">Map your columns</div>
+        <div class="warning">Review each mapping before importing. Auto-detection may not always be correct.</div>
+        <div class="mapping-grid">
+          <div class="field">
+            <label>Role / job title</label>
+            <select id="map-role" onchange="updatePreview()"><option value="">— skip —</option></select>
+          </div>
+          <div class="field">
+            <label>Date filled / hired</label>
+            <select id="map-date" onchange="updatePreview()"><option value="">— skip —</option></select>
+          </div>
+          <div class="field">
+            <label>Base salary / offer amount</label>
+            <select id="map-salary" onchange="updatePreview()"><option value="">— skip —</option></select>
+          </div>
+          <div class="field">
+            <label>Fill source / channel</label>
+            <select id="map-source" onchange="handleSourceChange()"><option value="">— skip —</option></select>
+            <div class="hint">Used to identify agency vs. in-house fills.</div>
+          </div>
+          <div class="field">
+            <label>Referral flag <span style="color:#bbb;font-weight:400">(optional)</span></label>
+            <select id="map-referral" onchange="updatePreview()"><option value="">— skip —</option></select>
+            <div class="hint">Column that indicates a referral hire.</div>
+          </div>
+        </div>
+
+        <div id="source-values-wrap" class="source-box" style="display:none">
+          <div class="source-title">Which values mean "filled by agency"? Click to select.</div>
+          <div class="chips" id="source-chips"></div>
+          <div class="hint" style="margin-top:4px">Click the values that represent agency fills. Unselected values will be treated as in-house.</div>
+        </div>
+
+        <div class="field" style="margin-bottom:12px;margin-top:12px">
+          <label>Default agency rate (%) for imported hires</label>
+          <input type="number" id="csv-rate" value="25" min="0" max="100" step="1" style="width:120px">
+        </div>
+
+        <div id="preview-wrap" style="display:none" class="preview-box">
+          <div class="preview-title" id="preview-title"></div>
+          <div class="unconfirmed-badge" id="unconfirmed-badge"></div>
+          <table class="preview-table" id="preview-table">
+            <thead><tr><th>Role</th><th>Date</th><th>Base salary</th><th>Filled by</th><th>Left within 12mo?</th><th>Referral?</th></tr></thead>
+            <tbody id="preview-tbody"></tbody>
+          </table>
+        </div>
+
+        <div class="btn-row" style="margin-top:12px">
+          <button class="btn btn-primary" id="import-btn" onclick="importCSV()"><i class="ti ti-file-import"></i> Confirm &amp; import</button>
+          <button class="btn" onclick="resetCSV()">Clear</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Hire log</div>
+    <div class="hire-list" id="hire-list"><div class="empty">No hires logged yet.</div></div>
+  </div>
+
+  <div id="results" style="display:none">
+    <div class="section">
+      <div class="section-title">Summary</div>
+      <div id="nudge" style="display:none" class="nudge">
+        <i class="ti ti-info-circle"></i>
+        <span>Add your <a onclick="document.getElementById('rec-salary').focus();document.getElementById('rec-salary').scrollIntoView({behavior:'smooth'})">salary and start date</a> above to see your net value to the company.</span>
+      </div>
+      <div class="metric-grid">
+        <div class="metric"><div class="label">Total fees avoided</div><div class="value" id="m-gross">—</div></div>
+        <div class="metric"><div class="label">Bad hire costs</div><div class="value negative" id="m-bad">—</div></div>
+        <div class="metric"><div class="label">Referral bonuses</div><div class="value negative" id="m-ref">—</div></div>
+        <div class="metric"><div class="label">Your salary cost (prorated)</div><div class="value" id="m-salary">—</div></div>
+      </div>
+      <div class="net-card" id="net-card">
+        <div class="net-card-label">Net value to company</div>
+        <div class="net-card-value" id="m-net">—</div>
+      </div>
+      <hr class="divider">
+      <div class="section-title">By year</div>
+      <table class="year-table">
+        <thead><tr><th>Year</th><th>Fees avoided</th><th>Bad hire costs</th><th>Referral bonuses</th><th>Your cost</th><th>Net</th></tr></thead>
+        <tbody id="year-tbody"></tbody>
+      </table>
+      <div class="export-row">
+        <button class="btn" onclick="exportCSVReport()"><i class="ti ti-file-spreadsheet"></i> Download as Excel (CSV)</button>
+        <button class="btn" onclick="exportPDF()"><i class="ti ti-file-type-pdf"></i> Download as PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    Built by <a href="https://github.com/vixbuilds" target="_blank">vixbuilds</a> &middot; Free to use &middot; No data stored or transmitted
+  </div>
+</div>
+
+<script>
+let hires=[];
+let lastYearData={};
+let lastTotals={fees:0,bad:0,salary:0,net:0};
+let csvHeaders=[];
+let csvRows=[];
+let selectedAgencyVals=new Set();
+let rowOverrides={}; // rowIndex -> true (agency) | false (inhouse) | null (unconfirmed)
+let badHireOverrides={}; // rowIndex -> true (bad hire) | false (good)
+let referralOverrides={}; // rowIndex -> true (referral) | false
+
+function getSymbol(){const sel=document.getElementById('currency').value;if(sel==='custom')return document.getElementById('custom-symbol').value||'?';return sel;}
+function handleCurrencyChange(){document.getElementById('custom-wrap').style.display=document.getElementById('currency').value==='custom'?'block':'none';recalc();renderHires();}
+function fmt(n){return getSymbol()+Math.abs(Math.round(n)).toLocaleString();}
+
+function showInlineError(id,msg){const el=document.getElementById(id);if(!el)return;el.textContent=msg;el.style.display='block';setTimeout(()=>{el.style.display='none';},5000);}
+
+function switchTab(t){
+  document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',i===(t==='manual'?0:1)));
+  document.getElementById('pane-manual').classList.toggle('active',t==='manual');
+  document.getElementById('pane-csv').classList.toggle('active',t==='csv');
+}
+
+function handleManualSourceChange(){
+  const isAgency=document.getElementById('h-source').value==='agency';
+  document.getElementById('referral-row').style.display=isAgency?'none':'flex';
+  if(isAgency) document.getElementById('h-referral').checked=false;
+}
+
+function getReferralBonus(){return parseFloat(document.getElementById('referral-bonus').value)||0;}
+
+function addHire(){
+  const role=document.getElementById('h-role').value.trim()||'Unnamed role';
+  const date=document.getElementById('h-date').value;
+  const base=parseFloat(document.getElementById('h-base').value);
+  const rate=parseFloat(document.getElementById('h-rate').value)||25;
+  const failed=document.getElementById('h-failed').checked;
+  const source=document.getElementById('h-source').value;
+  const referral=source==='me'&&document.getElementById('h-referral').checked;
+  if(!date||isNaN(base)||base<=0){showInlineError('hire-error','Please enter a filled date and base salary.');return;}
+  if(source==='agency'){
+    hires.push({role,date,base,rate,failed,agency:true,referral:false,id:Date.now()});
+  } else {
+    hires.push({role,date,base,rate,failed,agency:false,referral,id:Date.now()});
+  }
+  document.getElementById('h-role').value='';document.getElementById('h-date').value='';document.getElementById('h-base').value='';document.getElementById('h-rate').value='25';document.getElementById('h-failed').checked=false;document.getElementById('h-referral').checked=false;document.getElementById('h-source').value='me';
+  const errEl=document.getElementById('hire-error');if(errEl)errEl.style.display='none';
+  document.getElementById('referral-row').style.display='flex';
+  renderHires();recalc();
+}
+
+function removeHire(id){hires=hires.filter(h=>h.id!==id);renderHires();recalc();}
+
+function toggleBadHire(id){
+  const h=hires.find(h=>h.id===id);
+  if(h&&!h.agency){h.failed=!h.failed;renderHires();recalc();}
+}
+
+function isWithin12Months(dateStr){
+  if(!dateStr) return false;
+  const hireDate=new Date(dateStr+'T00:00:00');
+  const cutoff=new Date();
+  cutoff.setFullYear(cutoff.getFullYear()-1);
+  return hireDate>cutoff;
+}
+
+function renderHires(){
+  const el=document.getElementById('hire-list');
+  if(!hires.length){el.innerHTML='<div class="empty">No hires logged yet.</div>';return;}
+  const badPct=(parseFloat(document.getElementById('bad-hire-pct').value)||50)/100;
+  const refBonus=getReferralBonus();
+  el.innerHTML=hires.map(h=>{
+    const fee=h.agency?0:h.base*(h.rate/100);
+    const badCost=(!h.agency&&h.failed)?(h.base*badPct):0;
+    const refCost=(!h.agency&&h.referral)?refBonus:0;
+    const net=fee-badCost-refCost;const yr=h.date.substring(0,4);
+    const tooSoon=!h.agency&&isWithin12Months(h.date);
+    let badBtn='';
+    if(!h.agency){
+      if(tooSoon){
+        badBtn=`<button class="bad-toggle" disabled title="Hire is less than 12 months old — check back later" style="cursor:default;opacity:0.4">Too soon</button>`;
+      } else {
+        badBtn=`<button class="bad-toggle${h.failed?' active':''}" onclick="toggleBadHire(${h.id})" title="${h.failed?'Mark as good hire':'Mark as bad hire (left within 12 months)'}">${h.failed?'Bad hire':'Left?'}</button>`;
+      }
+    }
+    return `<div class="hire-item">
+      <span class="role">${h.role} <span style="color:#bbb">${yr}</span>${h.agency?'<span class="tag agency">agency</span>':''}${h.fromCSV?'<span class="tag csv">csv</span>':''}${(!h.agency&&h.referral)?'<span class="tag" style="background:#f0f4ff;color:#3b5bdb">referral</span>':''}${(!h.agency&&h.failed)?'<span class="tag">bad hire</span>':''}</span>
+      ${h.agency?'<span style="font-size:13px;color:#bbb">excluded</span>':'<span class="amt '+(net<0?'bad':'')+'">'+(net<0?'-':'')+fmt(net)+'</span>'}
+      ${badBtn}
+      <button onclick="removeHire(${h.id})" aria-label="Remove hire"><i class="ti ti-x"></i></button>
+    </div>`;
+  }).join('');
+}
+
+function recalc(){
+  const activehires=hires.filter(h=>!h.agency);
+  if(!hires.length){document.getElementById('results').style.display='none';return;}
+  const salary=parseFloat(document.getElementById('rec-salary').value)||0;
+  const startStr=document.getElementById('rec-start').value;
+  const badPct=(parseFloat(document.getElementById('bad-hire-pct').value)||50)/100;
+  const startDate=startStr?new Date(startStr+'T00:00:00'):null;
+  const hasSalary=salary>0&&startDate&&!isNaN(startDate);
+  let totalFees=0,totalBad=0,totalRef=0;
+  const refBonus=getReferralBonus();
+  const byYear={};
+  // Initialize byYear from ALL hires so agency-only years still get salary cost
+  hires.forEach(h=>{const yr=h.date.substring(0,4);if(!byYear[yr])byYear[yr]={fees:0,bad:0,ref:0,salaryCost:0};});
+  activehires.forEach(h=>{
+    const fee=h.base*(h.rate/100);
+    const badCost=h.failed?(h.base*badPct):0;
+    const refCost=h.referral?refBonus:0;
+    totalFees+=fee;totalBad+=badCost;totalRef+=refCost;
+    const yr=h.date.substring(0,4);
+    if(!byYear[yr])byYear[yr]={fees:0,bad:0,ref:0,salaryCost:0};
+    byYear[yr].fees+=fee;byYear[yr].bad+=badCost;byYear[yr].ref+=refCost;
+  });
+  if(hasSalary){
+    const lastHireDateByYear={};
+    hires.forEach(h=>{const yr=h.date.substring(0,4);if(!lastHireDateByYear[yr]||h.date>lastHireDateByYear[yr])lastHireDateByYear[yr]=h.date;});
+    Object.keys(byYear).forEach(yr=>{
+      const yNum=parseInt(yr);
+      const jan1=new Date(yNum,0,1);
+      const dec31=new Date(yNum,11,31);
+      const daysInYear=Math.round((new Date(yNum+1,0,1)-jan1)/(1000*60*60*24));
+      const lastHireStr=lastHireDateByYear[yr];
+      const lastHireDate=lastHireStr?new Date(lastHireStr+'T00:00:00'):dec31;
+      const yearEnd=lastHireDate<dec31?lastHireDate:dec31;
+      const yearStart=startDate>jan1?startDate:jan1;
+      if(yearStart>yearEnd){byYear[yr].salaryCost=0;return;}
+      const activeDays=Math.max(0,Math.floor((yearEnd-yearStart)/(1000*60*60*24)))+1;
+      byYear[yr].salaryCost=salary*(activeDays/daysInYear);
+    });
+  }
+  const totalSalary=Object.values(byYear).reduce((s,y)=>s+y.salaryCost,0);
+  const net=totalFees-totalBad-totalRef-totalSalary;
+  lastYearData=byYear;lastTotals={fees:totalFees,bad:totalBad,ref:totalRef,salary:totalSalary,net};
+  document.getElementById('nudge').style.display=hasSalary?'none':'flex';
+  document.getElementById('m-gross').textContent=fmt(totalFees);
+  document.getElementById('m-bad').textContent=totalBad>0?'-'+fmt(totalBad):getSymbol()+'0';
+  document.getElementById('m-ref').textContent=totalRef>0?'-'+fmt(totalRef):getSymbol()+'0';
+  document.getElementById('m-salary').className='value'+(hasSalary?'':' muted');
+  document.getElementById('m-salary').textContent=hasSalary?'-'+fmt(totalSalary):'Add salary above';
+  const netEl=document.getElementById('m-net');
+  const netCard=document.getElementById('net-card');
+  if(hasSalary){netEl.textContent=(net<0?'-':'')+fmt(net);netEl.className='net-card-value '+(net>=0?'positive':'negative');netCard.className='net-card '+(net>=0?'positive':'negative');}
+  else{netEl.textContent='—';netEl.className='net-card-value muted';netCard.className='net-card';}
+  document.getElementById('year-tbody').innerHTML=Object.keys(byYear).sort().map(yr=>{
+    const y=byYear[yr];const yNet=y.fees-y.bad-y.ref-y.salaryCost;
+    return `<tr><td>${yr}</td><td>${fmt(y.fees)}</td><td>${y.bad>0?'-'+fmt(y.bad):'—'}</td><td>${y.ref>0?'-'+fmt(y.ref):'—'}</td><td class="${hasSalary?'':'muted'}">${hasSalary&&y.salaryCost>0?'-'+fmt(y.salaryCost):'Add salary'}</td><td class="${hasSalary?(yNet>=0?'positive':'negative'):'muted'}">${hasSalary?(yNet<0?'-':'')+fmt(yNet):'—'}</td></tr>`;
+  }).join('');
+  document.getElementById('results').style.display='block';
+}
+
+function handleCSV(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    const lines=e.target.result.split(/\r?\n/).filter(l=>l.trim());
+    if(lines.length<2){showInlineError('csv-error','This CSV appears empty or invalid. Please check the file and try again.');return;}
+    csvHeaders=parseCSVLine(lines[0]);
+    csvRows=lines.slice(1).map(parseCSVLine).filter(r=>r.some(c=>c.trim()));
+    selectedAgencyVals=new Set();
+    rowOverrides={};
+    badHireOverrides={};referralOverrides={};
+    populateMappingSelects();
+    document.getElementById('mapping-section').style.display='block';
+    updatePreview();
+  };reader.readAsText(file);
+}
+
+function parseCSVLine(line){
+  const result=[];let cur='';let inQ=false;
+  for(let i=0;i<line.length;i++){
+    const c=line[i];
+    if(c==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else{inQ=!inQ;}}
+    else if(c===','&&!inQ){result.push(cur.trim());cur='';}
+    else cur+=c;
+  }
+  result.push(cur.trim());return result;
+}
+
+function populateMappingSelects(){
+  ['map-role','map-date','map-salary','map-source','map-referral'].forEach(id=>{
+    const sel=document.getElementById(id);
+    sel.innerHTML='<option value="">— skip —</option>';
+    csvHeaders.forEach((h,i)=>{sel.innerHTML+=`<option value="${i}">${h}</option>`;});
+    autoGuess(sel,id);
+  });
+  handleSourceChange();
+}
+
+function autoGuess(sel,id){
+  const guesses={
+    'map-role':['job title','role','position name','position','title','req title','job name'],
+    'map-date':['date filled','fill date','hire date','offer accepted date','offer accepted','accepted date','close date','closed date','start date'],
+    'map-salary':['annual compensation','annual comp','base salary','base pay','salary','offer amount','compensation','total comp','offer salary','comp','annual salary'],
+    'map-source':['hire type','source','channel','fill source','hire source','sourced by','credited to','type','filled by'],
+    'map-referral':['referral','referred by','referral source','referred','referral flag','is referral','referral hire']
+  };
+  const terms=guesses[id]||[];
+  for(let i=1;i<sel.options.length;i++){
+    const txt=sel.options[i].text.toLowerCase().trim();
+    if(terms.some(t=>txt===t||txt===t.toLowerCase())){sel.value=sel.options[i].value;return;}
+  }
+  // fuzzy fallback
+  for(let i=1;i<sel.options.length;i++){
+    const txt=sel.options[i].text.toLowerCase();
+    if(terms.some(t=>txt.includes(t))){sel.value=sel.options[i].value;return;}
+  }
+}
+
+function handleSourceChange(){
+  const sourceIdx=document.getElementById('map-source').value;
+  const wrap=document.getElementById('source-values-wrap');
+  selectedAgencyVals=new Set();
+  rowOverrides={};
+  badHireOverrides={};referralOverrides={};
+  if(sourceIdx!==''){
+    const vals=[...new Set(csvRows.map(r=>(r[+sourceIdx]||'').trim()).filter(Boolean))].sort();
+    // Auto-detect likely agency values
+    const agencyKeywords=['agency','staffing','recruiter','external','vendor','partner','search firm','headhunter','contract','temp','outsource'];
+    vals.forEach(v=>{if(agencyKeywords.some(k=>v.toLowerCase().includes(k)))selectedAgencyVals.add(v);});
+    const chipsEl=document.getElementById('source-chips');
+    chipsEl.innerHTML=vals.map(v=>`<button class="chip${selectedAgencyVals.has(v)?' selected':''}" onclick="toggleChip(this,'${v.replace(/'/g,"\\'")}')"> ${v}</button>`).join('');
+    wrap.style.display='block';
+  } else {
+    wrap.style.display='none';
+  }
+  updatePreview();
+}
+
+function toggleChip(el,val){
+  if(selectedAgencyVals.has(val)){selectedAgencyVals.delete(val);el.classList.remove('selected');}
+  else{selectedAgencyVals.add(val);el.classList.add('selected');}
+  updatePreview();
+}
+
+function needsManualConfirm(sourceIdx, srcRaw){
+  // Needs manual confirm if: no source column mapped, OR source mapped but value is blank
+  if(sourceIdx==='') return true;
+  if(srcRaw===''&&sourceIdx!=='') return true;
+  return false;
+}
+
+function setRowOverride(idx, isAgency){
+  rowOverrides[idx]=isAgency;
+  updatePreview();
+}
+
+function setBadHireOverride(idx, val){
+  badHireOverrides[idx]=val;
+  updatePreview();
+}
+
+function setReferralOverride(idx, val){
+  referralOverrides[idx]=val;
+  updatePreview();
+}
+
+function updatePreview(){
+  const dateIdx=document.getElementById('map-date').value;
+  const salaryIdx=document.getElementById('map-salary').value;
+  const roleIdx=document.getElementById('map-role').value;
+  const sourceIdx=document.getElementById('map-source').value;
+  if(!dateIdx&&!salaryIdx){document.getElementById('preview-wrap').style.display='none';return;}
+  let rows=[];let inhouse=0;let agency=0;let skipped=0;let unconfirmed=0;
+  const rate=parseFloat(document.getElementById('csv-rate').value)||25;
+  csvRows.forEach((row,idx)=>{
+    const role=roleIdx!==''?(row[+roleIdx]||'Unnamed role'):'Unnamed role';
+    const dateRaw=dateIdx!==''?(row[+dateIdx]||''):'';
+    const salaryRaw=salaryIdx!==''?(row[+salaryIdx]||''):'';
+    const srcRaw=sourceIdx!==''?(row[+sourceIdx]||'').trim():'';
+    const salary=parseFloat(salaryRaw.replace(/[^0-9.]/g,''));
+    const date=parseDate(dateRaw);
+    if(!date||isNaN(salary)||salary<=0){skipped++;rows.push({role,date:dateRaw||'—',salary:'—',type:'skip',idx});return;}
+    const autoAgency=selectedAgencyVals.size>0&&selectedAgencyVals.has(srcRaw);
+    const manual=needsManualConfirm(sourceIdx,srcRaw);
+    let isAgency;
+    if(manual){
+      isAgency=rowOverrides[idx]; // true, false, or undefined
+      if(isAgency===undefined||isAgency===null){unconfirmed++;rows.push({role,date,salary:getSymbol()+Math.round(salary).toLocaleString(),type:'unconfirmed',idx,salaryNum:salary});return;}
+    } else {
+      isAgency=rowOverrides[idx]!==undefined?rowOverrides[idx]:autoAgency;
+    }
+    if(isAgency){agency++;rows.push({role,date,salary:getSymbol()+Math.round(salary).toLocaleString(),type:'agency',idx,salaryNum:salary,manual});}
+    else{inhouse++;rows.push({role,date,salary:getSymbol()+Math.round(salary).toLocaleString(),type:'inhouse',idx,salaryNum:salary,manual,fee:getSymbol()+Math.round(salary*(rate/100)).toLocaleString()});}
+  });
+  const tbody=document.getElementById('preview-tbody');
+  tbody.innerHTML=rows.map(r=>{
+    if(r.type==='skip') return `<tr><td>${r.role}</td><td>${r.date}</td><td>${r.salary}</td><td class="excl">skipped (no date/salary)</td><td></td><td></td></tr>`;
+    const sourceIdx2=document.getElementById('map-source').value;
+    const srcRaw2=sourceIdx2!==''?(csvRows[r.idx][+sourceIdx2]||'').trim():'';
+    const manual=needsManualConfirm(sourceIdx2,srcRaw2);
+    const toggle=manual||r.type==='unconfirmed'?
+      `<div class="row-toggle">
+        <button class="${r.type==='inhouse'?'active-inhouse':''}" onclick="setRowOverride(${r.idx},false)">In-house</button>
+        <button class="${r.type==='agency'?'active-agency':''}" onclick="setRowOverride(${r.idx},true)">Agency</button>
+      </div>`
+      :`<span class="${r.type==='agency'?'excl':''}">${r.type==='agency'?'agency — excluded':'+'+r.fee+' avoided'}</span>`;
+    // Bad hire column
+    let badCell='';
+    if(r.type==='agency'||r.type==='unconfirmed'){
+      badCell='<td class="excl">—</td>';
+    } else {
+      const tooSoon=isWithin12Months(r.date);
+      if(tooSoon){
+        badCell=`<td><span style="font-size:12px;color:#bbb" title="Hire is less than 12 months old">Too soon</span></td>`;
+      } else {
+        const isBad=badHireOverrides[r.idx]===true;
+        badCell=`<td><div class="row-toggle">
+          <button class="${!isBad?'active-inhouse':''}" onclick="setBadHireOverride(${r.idx},false)">No</button>
+          <button class="${isBad?'active-agency':''}" onclick="setBadHireOverride(${r.idx},true)">Yes</button>
+        </div></td>`;
+      }
+    }
+    // Referral column
+    let refCell='';
+    if(r.type==='agency'||r.type==='unconfirmed'){
+      refCell='<td class="excl">—</td>';
+    } else {
+      const refIdx=document.getElementById('map-referral').value;
+      let autoRef=false;
+      if(refIdx!==''){const refRaw=(csvRows[r.idx][+refIdx]||'').trim().toLowerCase();autoRef=refRaw==='yes'||refRaw==='true'||refRaw==='1'||refRaw==='referral';}
+      const isRef=referralOverrides[r.idx]!==undefined?referralOverrides[r.idx]:autoRef;
+      refCell=`<td><div class="row-toggle">
+        <button class="${!isRef?'active-inhouse':''}" onclick="setReferralOverride(${r.idx},false)">No</button>
+        <button class="${isRef?'active-agency':''}" onclick="setReferralOverride(${r.idx},true)">Yes</button>
+      </div></td>`;
+    }
+    if(r.type==='unconfirmed') return `<tr style="background:#fffbeb"><td>${r.role}</td><td>${r.date}</td><td>${r.salary}</td><td>${toggle}</td>${badCell}${refCell}</tr>`;
+    return `<tr><td>${r.role}</td><td>${r.date}</td><td>${r.salary}</td><td>${toggle}</td>${badCell}${refCell}</tr>`;
+  }).join('');
+  const badge=document.getElementById('unconfirmed-badge');
+  const importBtn=document.getElementById('import-btn');
+  if(unconfirmed>0){
+    badge.textContent=`${unconfirmed} hire${unconfirmed!==1?'s':''} need your confirmation — select In-house or Agency for each highlighted row before importing.`;
+    badge.style.display='block';
+    if(importBtn) importBtn.disabled=true;
+  } else {
+    badge.style.display='none';
+    if(importBtn) importBtn.disabled=false;
+  }
+  document.getElementById('preview-title').textContent=`${inhouse} hire${inhouse!==1?'s':''} to import${agency>0?' · '+agency+' agency fill'+(agency!==1?'s':'')+' excluded':''}${unconfirmed>0?' · '+unconfirmed+' unconfirmed':''}${skipped>0?' · '+skipped+' skipped':''}`;
+  document.getElementById('preview-wrap').style.display='block';
+}
+
+function importCSV(){
+  const dateIdx=document.getElementById('map-date').value;
+  const salaryIdx=document.getElementById('map-salary').value;
+  const roleIdx=document.getElementById('map-role').value;
+  const sourceIdx=document.getElementById('map-source').value;
+  const defaultRate=parseFloat(document.getElementById('csv-rate').value)||25;
+  if(!dateIdx||!salaryIdx){
+    const badge=document.getElementById('unconfirmed-badge');
+    badge.textContent='Please map at least the date and salary columns before importing.';
+    badge.style.display='block';
+    return;
+  }
+  // Check for unconfirmed rows
+  let unconfirmedCount=0;
+  csvRows.forEach((row,idx)=>{
+    const dateRaw=dateIdx!==''?(row[+dateIdx]||''):'';
+    const salaryRaw=salaryIdx!==''?(row[+salaryIdx]||''):'';
+    const srcRaw=sourceIdx!==''?(row[+sourceIdx]||'').trim():'';
+    const salary=parseFloat(salaryRaw.replace(/[^0-9.]/g,''));
+    const date=parseDate(dateRaw);
+    if(!date||isNaN(salary)||salary<=0) return; // skipped rows don't need confirmation
+    if(needsManualConfirm(sourceIdx,srcRaw)&&(rowOverrides[idx]===undefined||rowOverrides[idx]===null)) unconfirmedCount++;
+  });
+  if(unconfirmedCount>0){
+    const badge=document.getElementById('unconfirmed-badge');
+    badge.textContent=`${unconfirmedCount} hire${unconfirmedCount!==1?'s':''} still need confirmation. Select In-house or Agency for each highlighted row.`;
+    badge.style.display='block';
+    return;
+  }
+  let added=0,skipped=0;
+  csvRows.forEach((row,idx)=>{
+    const role=roleIdx!==''?(row[+roleIdx]||'Unnamed role'):'Unnamed role';
+    const dateRaw=dateIdx!==''?(row[+dateIdx]||''):'';
+    const salaryRaw=salaryIdx!==''?(row[+salaryIdx]||''):'';
+    const srcRaw=sourceIdx!==''?(row[+sourceIdx]||'').trim():'';
+    const salary=parseFloat(salaryRaw.replace(/[^0-9.]/g,''));
+    const date=parseDate(dateRaw);
+    if(!date||isNaN(salary)||salary<=0){skipped++;return;}
+    const autoAgency=selectedAgencyVals.size>0&&selectedAgencyVals.has(srcRaw);
+    const isAgency=rowOverrides[idx]!==undefined?rowOverrides[idx]:autoAgency;
+    const refIdx=document.getElementById('map-referral').value;
+    let autoRef=false;
+    if(!isAgency&&refIdx!==''){const refRaw=(row[+refIdx]||'').trim().toLowerCase();autoRef=refRaw==='yes'||refRaw==='true'||refRaw==='1'||refRaw==='referral';}
+    const referral=!isAgency&&(referralOverrides[idx]!==undefined?referralOverrides[idx]:autoRef);
+    const failed=!isAgency&&!isWithin12Months(date)?(badHireOverrides[idx]===true):false;
+    hires.push({role,date,base:salary,rate:defaultRate,failed,agency:isAgency,referral,fromCSV:true,id:Date.now()+Math.random()});
+    added++;
+  });
+  renderHires();recalc();resetCSV();switchTab('manual');
+}
+
+function parseDate(str){
+  if(!str)return null;const s=str.trim();
+  const patterns=[
+    {re:/^(\d{4})-(\d{2})-(\d{2})/,fn:m=>`${m[1]}-${m[2]}-${m[3]}`},
+    {re:/^(\d{1,2})\/(\d{1,2})\/(\d{4})/,fn:m=>`${m[3]}-${m[1].padStart(2,'0')}-${m[2].padStart(2,'0')}`},
+    {re:/^(\d{2})-(\d{2})-(\d{4})/,fn:m=>`${m[3]}-${m[1]}-${m[2]}`}
+  ];
+  for(const p of patterns){const m=s.match(p.re);if(m){const d=new Date(p.fn(m)+'T00:00:00');if(!isNaN(d))return p.fn(m);}}
+  const dt=new Date(s);if(!isNaN(dt))return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+  return null;
+}
+
+function resetCSV(){
+  document.getElementById('csv-file').value='';
+  document.getElementById('mapping-section').style.display='none';
+  document.getElementById('preview-wrap').style.display='none';
+  document.getElementById('source-values-wrap').style.display='none';
+  document.getElementById('source-chips').innerHTML='';
+  selectedAgencyVals=new Set();
+  rowOverrides={};
+  badHireOverrides={};referralOverrides={};
+  csvHeaders=[];csvRows=[];
+}
+
+function exportCSVReport(){
+  const badPct=(parseFloat(document.getElementById('bad-hire-pct').value)||50)/100;const s=getSymbol();
+  let rows=[['Role','Date filled','Base salary','Agency rate (%)','Fee avoided','Bad hire cost','Net','Source']];
+  hires.forEach(h=>{
+    const fee=h.agency?0:h.base*(h.rate/100);const bad=(!h.agency&&h.failed)?h.base*badPct:0;
+    rows.push([h.role,h.date,s+Math.round(h.base).toLocaleString(),h.agency?'N/A':h.rate+'%',h.agency?'excluded':s+Math.round(fee).toLocaleString(),bad>0?'-'+s+Math.round(bad).toLocaleString():'—',h.agency?'excluded':(fee-bad<0?'-':'')+s+Math.round(Math.abs(fee-bad)).toLocaleString(),h.agency?'agency':'in-house']);
+  });
+  rows.push([]);rows.push(['Year','Fees avoided','Bad hire costs','Your salary cost','Net value']);
+  Object.keys(lastYearData).sort().forEach(yr=>{
+    const y=lastYearData[yr];const yNet=y.fees-y.bad-y.salaryCost;
+    rows.push([yr,s+Math.round(y.fees).toLocaleString(),y.bad>0?'-'+s+Math.round(y.bad).toLocaleString():'—',y.salaryCost>0?'-'+s+Math.round(y.salaryCost).toLocaleString():'—',(yNet<0?'-':'')+s+Math.round(Math.abs(yNet)).toLocaleString()]);
+  });
+  rows.push([]);rows.push(['TOTAL','Fees avoided','Bad hire costs','Salary cost','Net value']);
+  rows.push(['',fmt(lastTotals.fees),lastTotals.bad>0?'-'+fmt(lastTotals.bad):'—',lastTotals.salary>0?'-'+fmt(lastTotals.salary):'—',(lastTotals.net<0?'-':'')+fmt(lastTotals.net)]);
+  const csv=rows.map(r=>r.map(c=>'"'+(c+'').replace(/"/g,'""')+'"').join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='cost-avoidance-report.csv';a.click();
+}
+
+function exportPDF(){
+  const badPct=(parseFloat(document.getElementById('bad-hire-pct').value)||50)/100;const s=getSymbol();
+  const salary=document.getElementById('rec-salary').value||'—';const startDate=document.getElementById('rec-start').value||'—';
+  const hiresRows=hires.map(h=>{
+    const fee=h.agency?0:h.base*(h.rate/100);const bad=(!h.agency&&h.failed)?h.base*badPct:0;
+    return `<tr><td>${h.role}</td><td>${h.date}</td><td>${s}${Math.round(h.base).toLocaleString()}</td><td>${h.agency?'agency':'in-house'}</td><td>${h.agency?'<span style="color:#aaa">excluded</span>':s+Math.round(fee).toLocaleString()}</td><td>${bad>0?'-'+s+Math.round(bad).toLocaleString():'—'}</td><td style="color:${fee-bad>=0?'#1a7f4b':'#c0392b'}">${h.agency?'<span style="color:#aaa">—</span>':(fee-bad<0?'-':'')+s+Math.round(Math.abs(fee-bad)).toLocaleString()}</td></tr>`;
+  }).join('');
+  const yearRows=Object.keys(lastYearData).sort().map(yr=>{
+    const y=lastYearData[yr];const yNet=y.fees-y.bad-y.salaryCost;
+    return `<tr><td>${yr}</td><td>${s}${Math.round(y.fees).toLocaleString()}</td><td>${y.bad>0?'-'+s+Math.round(y.bad).toLocaleString():'—'}</td><td>${y.salaryCost>0?'-'+s+Math.round(y.salaryCost).toLocaleString():'—'}</td><td style="font-weight:500;color:${yNet>=0?'#1a7f4b':'#c0392b'}">${yNet<0?'-':''}${s}${Math.round(Math.abs(yNet)).toLocaleString()}</td></tr>`;
+  }).join('');
+  const netColor=lastTotals.net>=0?'#1a7f4b':'#c0392b';
+  const html=`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Cost Avoidance Report</title><style>body{font-family:Arial,sans-serif;font-size:13px;color:#222;padding:32px;max-width:900px;margin:0 auto}h1{font-size:20px;font-weight:600;margin-bottom:4px}.sub{color:#666;font-size:13px;margin-bottom:24px}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}.metric{background:#f5f5f5;border-radius:8px;padding:12px}.metric .lbl{font-size:11px;color:#666;margin-bottom:4px}.metric .val{font-size:20px;font-weight:600}table{width:100%;border-collapse:collapse;margin-bottom:24px}th{font-size:11px;color:#666;text-align:left;padding:6px 8px;border-bottom:1px solid #ddd;background:#fafafa}td{padding:7px 8px;border-bottom:1px solid #eee;font-size:12px}h2{font-size:14px;font-weight:600;margin:20px 0 8px}.footer{font-size:11px;color:#aaa;margin-top:32px;border-top:1px solid #eee;padding-top:12px}@media print{body{padding:16px}}</style></head><body><h1>Recruiter cost avoidance report</h1><div class="sub">Salary: ${s}${parseInt(salary).toLocaleString()||'not entered'} &nbsp;|&nbsp; Start date: ${startDate} &nbsp;|&nbsp; Generated: ${new Date().toLocaleDateString()}</div><div class="metrics"><div class="metric"><div class="lbl">Total fees avoided</div><div class="val">${fmt(lastTotals.fees)}</div></div><div class="metric"><div class="lbl">Bad hire costs</div><div class="val" style="color:#c0392b">${lastTotals.bad>0?'-'+fmt(lastTotals.bad):s+'0'}</div></div><div class="metric"><div class="lbl">Salary cost (prorated)</div><div class="val">${lastTotals.salary>0?'-'+fmt(lastTotals.salary):'—'}</div></div><div class="metric"><div class="lbl">Net value to company</div><div class="val" style="color:${netColor}">${lastTotals.net<0?'-':''}${fmt(lastTotals.net)}</div></div></div><h2>By year</h2><table><thead><tr><th>Year</th><th>Fees avoided</th><th>Bad hire costs</th><th>Your cost</th><th>Net</th></tr></thead><tbody>${yearRows}</tbody></table><h2>Hire log</h2><table><thead><tr><th>Role</th><th>Date</th><th>Base salary</th><th>Source</th><th>Fee avoided</th><th>Bad hire cost</th><th>Net</th></tr></thead><tbody>${hiresRows}</tbody></table><div class="footer">Generated by the Recruiter Cost Avoidance Calculator &middot; vixbuilds.github.io &middot; No data stored or transmitted.</div><script>window.onload=function(){window.print();}<\/script></body></html>`;
+  const w=window.open('','_blank');if(w){w.document.write(html);w.document.close();}
+}
+</script>
+</body>
+</html>
